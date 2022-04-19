@@ -44,10 +44,12 @@ public class JukeboxService {
                     selectedJukes.add(j);
                 }
             }
+
             return selectedJukes.subList(offset, Math.min(offset + limit, selectedJukes.size()));
         } else {
             PageRequest paging = PageRequest.of(offset, limit);
             Page<Jukebox> pagedResult = jukeboxRepository.findAll(paging);
+
             if(pagedResult.hasContent()) {
                 return pagedResult.getContent();
             } else {

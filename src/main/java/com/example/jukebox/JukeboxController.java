@@ -1,10 +1,16 @@
 package com.example.jukebox;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/jukeboxes")
@@ -24,9 +30,15 @@ public class JukeboxController {
      * @return the jukebox with the id. If it does not exist, a JukeboxNotFoundException will be thrown.
      */
     @GetMapping("/{id}")
-    Jukebox one(@PathVariable Long id) {
-        return repository.findById(id)
+    EntityModel<Jukebox> one(@PathVariable String id) {
+
+        Jukebox jukebox = repository.findById(id)
                 .orElseThrow(() -> new JukeboxNotFoundException(id));
+
+        return EntityModel.of(jukebox,
+                linkTo(methodOn(JukeboxController.class).one(jukebox.getId())).withSelfRel(),
+                linkTo(methodOn(JukeboxController.class).getAllJukeboxes(Optional.empty(),0,5))
+                        .withRel("jukeboxes"));
     }
 
     /**
@@ -41,11 +53,27 @@ public class JukeboxController {
      */
     @GetMapping
     @ResponseBody
-    public List<Jukebox> getAllJukeboxes(
+    CollectionModel<EntityModel<Jukebox>> getAllJukeboxes(
             @RequestParam Optional<UUID> settingID,
             @RequestParam(defaultValue = "0") Integer offset,
             @RequestParam(defaultValue = "5") Integer limit)
     {
-        return service.getAllJukeboxes(settingID, offset, limit);
+        List<Jukebox> jukes = service.getAllJukeboxes(settingID, offset, limit);
+
+        List<EntityModel<Jukebox>> jukesEntity = jukes.stream()
+                .map(jukebox -> EntityModel.of(jukebox)).collect(Collectors.toList());
+
+        if(offset > 0)
+            return CollectionModel.of(jukesEntity,
+                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset,limit)).withSelfRel(),
+                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset+1,limit))
+                            .withRel("next_page"),
+                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset-1,limit))
+                            .withRel("prev_page"));
+        else
+            return CollectionModel.of(jukesEntity,
+                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset,limit)).withSelfRel(),
+                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset+1,limit))
+                            .withRel("next_page"));
     }
 }

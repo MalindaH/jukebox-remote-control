@@ -7,7 +7,7 @@ public class JukeboxNotFoundException extends RuntimeException{
      *
      * @param id the id of the jukebox
      */
-    JukeboxNotFoundException(Long id) {
+    JukeboxNotFoundException(String id) {
         super("Could not find jukebox " + id);
     }
 }
