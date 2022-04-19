@@ -4,9 +4,9 @@ This is a web application to remote control Jukebox settings. Depending on what 
 
 It contains a REST API with a single GET endpoint which returns a paginated list of jukeboxes that suppport a given setting id. It supports following query parameters:
 
-- settingId - setting id
-- offset - specifies at what index start the page
-- limit - specifies the page size
+- `settingId` - setting id
+- `offset` - specifies at what index start the page
+- `limit` - specifies the page size
 
 ## Usage:
 1. `./mvnw spring-boot:run`, or run the app from an IDE.
