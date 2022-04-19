@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test querying settingId, offset, and limit for jukeboxes. The tests look for the correct jukebox ids to show up
@@ -34,7 +35,8 @@ public class HttpRequestTest {
     public void jukeboxGetPaginatedList1() throws Exception {
         String test = this.restTemplate.getForObject("http://localhost:" + port + "/jukeboxes?limit=5&offset=1",
                 String.class);
-        JSONArray arr = new JSONArray(test);
+        JSONObject obj = new JSONObject(test);
+        JSONArray arr = obj.getJSONObject("_embedded").getJSONArray("jukeboxList");
         List<String> ids = new ArrayList<>();
         for(int i=0; i<arr.length(); i++) {
             JSONObject entry =  arr.getJSONObject(i);
@@ -49,7 +51,8 @@ public class HttpRequestTest {
     public void jukeboxGetPaginatedList2() throws Exception {
         String test = this.restTemplate.getForObject("http://localhost:" + port + "/jukeboxes?limit=3&offset=3",
                 String.class);
-        JSONArray arr = new JSONArray(test);
+        JSONObject obj = new JSONObject(test);
+        JSONArray arr = obj.getJSONObject("_embedded").getJSONArray("jukeboxList");
         List<String> ids = new ArrayList<>();
         for(int i=0; i<arr.length(); i++) {
             JSONObject entry =  arr.getJSONObject(i);
@@ -63,7 +66,8 @@ public class HttpRequestTest {
     public void jukeboxGetBySettingId() throws Exception {
         String test = this.restTemplate.getForObject("http://localhost:" + port + "/jukeboxes?settingID=2321763c-8e06-4a31-873d-0b5dac2436da",
                 String.class);
-        JSONArray arr = new JSONArray(test);
+        JSONObject obj = new JSONObject(test);
+        JSONArray arr = obj.getJSONObject("_embedded").getJSONArray("jukeboxList");
         List<String> ids = new ArrayList<>();
         for(int i=0; i<arr.length(); i++) {
             JSONObject entry =  arr.getJSONObject(i);
@@ -77,21 +81,15 @@ public class HttpRequestTest {
     public void jukeboxGetBySettingIdNoFound() throws Exception {
         String test = this.restTemplate.getForObject("http://localhost:" + port + "/jukeboxes?settingID=2709ac80-2593-4dcf-ae72-a3c2fac023a5",
                 String.class);
-        JSONArray arr = new JSONArray(test);
-        List<String> ids = new ArrayList<>();
-        for(int i=0; i<arr.length(); i++) {
-            JSONObject entry =  arr.getJSONObject(i);
-            ids.add((String) entry.get("id"));
-        }
-        String[] shouldContain = {};
-        assertThat(ids.equals(Arrays.asList(shouldContain)));
+        assertEquals(test, "{}");
     }
 
     @Test
     public void jukeboxGetBySettingIdOffsetLimit() throws Exception {
         String test = this.restTemplate.getForObject("http://localhost:" + port + "/jukeboxes?settingID=515ef38b-0529-418f-a93a-7f2347fc5805&limit=3&offset=2",
                 String.class);
-        JSONArray arr = new JSONArray(test);
+        JSONObject obj = new JSONObject(test);
+        JSONArray arr = obj.getJSONObject("_embedded").getJSONArray("jukeboxList");
         List<String> ids = new ArrayList<>();
         for(int i=0; i<arr.length(); i++) {
             JSONObject entry =  arr.getJSONObject(i);

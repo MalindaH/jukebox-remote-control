@@ -59,21 +59,25 @@ public class JukeboxController {
             @RequestParam(defaultValue = "5") Integer limit)
     {
         List<Jukebox> jukes = service.getAllJukeboxes(settingID, offset, limit);
+        if (jukes.size() > 0) {
+            List<EntityModel<Jukebox>> jukesEntity = jukes.stream()
+                    .map(jukebox -> EntityModel.of(jukebox)).collect(Collectors.toList());
 
-        List<EntityModel<Jukebox>> jukesEntity = jukes.stream()
-                .map(jukebox -> EntityModel.of(jukebox)).collect(Collectors.toList());
+            if(offset > 0)
+                return CollectionModel.of(jukesEntity,
+                        linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset,limit)).withSelfRel(),
+                        linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset+1,limit))
+                                .withRel("next_page"),
+                        linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset-1,limit))
+                                .withRel("prev_page"));
+            else
+                return CollectionModel.of(jukesEntity,
+                        linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset,limit)).withSelfRel(),
+                        linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset+1,limit))
+                                .withRel("next_page"));
+        } else {
+            return CollectionModel.empty();
+        }
 
-        if(offset > 0)
-            return CollectionModel.of(jukesEntity,
-                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset,limit)).withSelfRel(),
-                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset+1,limit))
-                            .withRel("next_page"),
-                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset-1,limit))
-                            .withRel("prev_page"));
-        else
-            return CollectionModel.of(jukesEntity,
-                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset,limit)).withSelfRel(),
-                    linkTo(methodOn(JukeboxController.class).getAllJukeboxes(settingID,offset+1,limit))
-                            .withRel("next_page"));
     }
 }
